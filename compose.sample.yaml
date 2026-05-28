@@ -1,0 +1,11 @@
+services:
+  relation-stub:
+    image: ghcr.io/pj-hoakari/tolo-relation-stub:latest
+    ports:
+      - "8080:8080"
+    environment:
+      RELATION_DATA: /data/sample.json
+      RELATION_ADDR: ":8080"
+    volumes:
+      - ./testdata:/data:ro
+    restart: unless-stopped
