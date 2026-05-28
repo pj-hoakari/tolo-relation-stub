@@ -1,0 +1,9 @@
+.git
+.gitignore
+.dockerignore
+Dockerfile
+README.md
+mise.toml
+testdata
+server
+*.md
