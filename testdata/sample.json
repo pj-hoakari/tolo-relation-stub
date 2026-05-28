@@ -1,0 +1,72 @@
+{
+    "tenants": [
+        { "id": "019e6cc4-8231-753e-a055-ee4e6f10d398", "name": "Alpha Inc" },
+        { "id": "019e6cc4-8231-76b1-9a8b-4649de96f2c9", "name": "Beta Org" }
+    ],
+    "events": [
+        {
+            "id": "019e6cc4-8231-76be-b1e9-cda855156ef7",
+            "tenantId": "019e6cc4-8231-753e-a055-ee4e6f10d398",
+            "name": "Summer Fest"
+        },
+        {
+            "id": "019e6cc4-8231-76c4-afc8-494708980b70",
+            "tenantId": "019e6cc4-8231-753e-a055-ee4e6f10d398",
+            "name": "Winter Meetup"
+        },
+        {
+            "id": "019e6cc4-8231-76ca-8154-3476dffb1e06",
+            "tenantId": "019e6cc4-8231-76b1-9a8b-4649de96f2c9",
+            "name": "Beta Launch"
+        }
+    ],
+    "tenantMembers": [
+        {
+            "tenantId": "019e6cc4-8231-753e-a055-ee4e6f10d398",
+            "userId": "019e6cc4-8231-76cf-8383-21d23606035e",
+            "role": "owner"
+        },
+        {
+            "tenantId": "019e6cc4-8231-753e-a055-ee4e6f10d398",
+            "userId": "019e6cc4-8231-76d4-bedc-ac37e8b759df",
+            "role": "staff"
+        },
+        {
+            "tenantId": "019e6cc4-8231-76b1-9a8b-4649de96f2c9",
+            "userId": "019e6cc4-8231-76da-ae34-00e0cb75917c",
+            "role": "owner"
+        },
+        {
+            "tenantId": "019e6cc4-8231-76b1-9a8b-4649de96f2c9",
+            "userId": "019e6cdd-2c9f-7bc2-a5ef-6d1b643b2868",
+            "role": "staff"
+        }
+    ],
+    "eventMembers": [
+        {
+            "eventId": "019e6cc4-8231-76be-b1e9-cda855156ef7",
+            "userId": "019e6cc4-8231-76cf-8383-21d23606035e",
+            "role": "staff"
+        },
+        {
+            "eventId": "019e6cc4-8231-76be-b1e9-cda855156ef7",
+            "userId": "019e6cc4-8231-76d4-bedc-ac37e8b759df",
+            "role": "owner"
+        },
+        {
+            "eventId": "019e6cc4-8231-76c4-afc8-494708980b70",
+            "userId": "019e6cc4-8231-76d4-bedc-ac37e8b759df",
+            "role": "staff"
+        },
+        {
+            "eventId": "019e6cc4-8231-76ca-8154-3476dffb1e06",
+            "userId": "019e6cc4-8231-76da-ae34-00e0cb75917c",
+            "role": "staff"
+        },
+        {
+            "eventId": "019e6cc4-8231-76ca-8154-3476dffb1e06",
+            "userId": "019e6cdd-2c9f-7bc2-a5ef-6d1b643b2868",
+            "role": "owner"
+        }
+    ]
+}
