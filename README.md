@@ -20,8 +20,10 @@ RELATION_DATA=./testdata/sample.json RELATION_ADDR=:9000 ./server
 docker run --rm -p 8080:8080 \
   -v "$(pwd)/testdata:/data:ro" \
   -e RELATION_DATA=/data/sample.json \
-  tolo-relation-stub
+  ghcr.io/pj-hoakari/tolo-relation-stub:latest
 ```
+
+対応プラットフォーム: `linux/amd64`, `linux/arm64`
 
 イメージ内のデフォルト環境変数
 
@@ -30,6 +32,12 @@ docker run --rm -p 8080:8080 \
 | `RELATION_ADDR` | `:8080` |
 | `GIN_MODE` | `release` |
 | `RELATION_DATA` | （未設定。実行時に必ず指定する） |
+
+### Docker Compose
+
+```bash
+docker compose -f compose.sample.yaml up
+```
 
 ## 関係性モデルの制約
 
