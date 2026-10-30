@@ -13,7 +13,7 @@ func NewRouter(s *store.Store) *gin.Engine {
 	rel := handler.NewRelationHandler(s)
 
 	r.GET("/healthz", handler.Healthz)
-	r.GET("/tenants/:tenantId/users/:userId", rel.GetTenantUserRelation)
+	r.GET("/tenants/:tenantId/users/:userId/memberships", rel.ListMemberships)
 
 	return r
 }
