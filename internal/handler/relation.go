@@ -16,27 +16,23 @@ func NewRelationHandler(s *store.Store) *RelationHandler {
 	return &RelationHandler{store: s}
 }
 
-type tenantBlock struct {
-	ID   string  `json:"id"`
-	Role *string `json:"role"`
+type eventRole struct {
+	EventID string `json:"event_id"`
+	Role    string `json:"role"`
 }
 
-type userBlock struct {
-	ID string `json:"id"`
+type membership struct {
+	UserID     string      `json:"user_id"`
+	TenantID   string      `json:"tenant_id"`
+	TenantRole string      `json:"tenant_role"`
+	EventRoles []eventRole `json:"event_roles"`
 }
 
-type eventBlock struct {
-	ID   string `json:"id"`
-	Role string `json:"role"`
+type membershipsResponse struct {
+	Memberships []membership `json:"memberships"`
 }
 
-type relationResponse struct {
-	Tenant tenantBlock  `json:"tenant"`
-	User   userBlock    `json:"user"`
-	Events []eventBlock `json:"events"`
-}
-
-func (h *RelationHandler) GetTenantUserRelation(c *gin.Context) {
+func (h *RelationHandler) ListMemberships(c *gin.Context) {
 	tenantID := c.Param("tenantId")
 	userID := c.Param("userId")
 
@@ -45,24 +41,28 @@ func (h *RelationHandler) GetTenantUserRelation(c *gin.Context) {
 		return
 	}
 
-	resp := relationResponse{
-		Tenant: tenantBlock{ID: tenantID},
-		User:   userBlock{ID: userID},
-		Events: []eventBlock{},
+	resp := membershipsResponse{Memberships: []membership{}}
+
+	role, ok := h.store.TenantRole(tenantID, userID)
+	if !ok {
+		c.JSON(http.StatusOK, resp)
+		return
 	}
 
-	if role, ok := h.store.TenantRole(tenantID, userID); ok {
-		r := string(role)
-		resp.Tenant.Role = &r
+	m := membership{
+		UserID:     userID,
+		TenantID:   tenantID,
+		TenantRole: string(role),
+		EventRoles: []eventRole{},
 	}
-
 	for _, e := range h.store.EventsByTenant(tenantID) {
 		role, ok := h.store.EventRole(e.ID, userID)
 		if !ok {
 			continue
 		}
-		resp.Events = append(resp.Events, eventBlock{ID: e.ID, Role: string(role)})
+		m.EventRoles = append(m.EventRoles, eventRole{EventID: e.ID, Role: string(role)})
 	}
+	resp.Memberships = append(resp.Memberships, m)
 
 	c.JSON(http.StatusOK, resp)
 }

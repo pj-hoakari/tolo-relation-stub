@@ -48,26 +48,33 @@ docker compose -f compose.sample.yaml up
 
 ## API
 
-### `GET /tenants/:tenantId/users/:userId`
+### `GET /tenants/:tenantId/users/:userId/memberships`
+
+tolo-tenant-management の所属参照 API（`GET /tenants/{tenant_id}/users/{user_id}/memberships`）と同じ形で応答する
 
 ```json
 {
-  "tenant": { "id": "<tenantId>", "role": "owner" },
-  "user":   { "id": "<userId>" },
-  "events": [
-    { "id": "<eventId>", "role": "staff" }
+  "memberships": [
+    {
+      "user_id": "<userId>",
+      "tenant_id": "<tenantId>",
+      "tenant_role": "owner",
+      "event_roles": [
+        { "event_id": "<eventId>", "role": "staff" }
+      ]
+    }
   ]
 }
 ```
 
-- `tenant.role` はユーザがそのテナントに対しロールを持たない場合 `null`
-- `events` は当該テナント配下のイベントのうち、ユーザがロールを持つもののみ列挙（無ければ `[]`）
+- `memberships` の要素は 0 件または 1 件。ユーザがそのテナントにロールを持たない場合は `[]`
+- `event_roles` は当該テナント配下のイベントのうち、ユーザがロールを持つもののみ列挙（無ければ `[]`）
 
 | Case | Status |
 | --- | --- |
-| `:tenantId` が存在しない | `404` |
-| テナントは存在し、ユーザに何のロールも無い | `200`（`tenant.role: null`、`events: []`） |
-| テナント・イベントいずれかにロールあり | `200`（該当部位のみ） |
+| `:tenantId` が存在しない | `404`（`{"error": "tenant not found"}`） |
+| テナントは存在し、ユーザにテナントロールが無い | `200`（`memberships: []`） |
+| テナントロールあり | `200`（`memberships` に 1 件） |
 
 ### `GET /healthz`
 
@@ -125,15 +132,15 @@ ID値は単純な文字列として扱うため，制限等はなし
 
 ### テナント・ユーザごとのレスポンス組み合わせ
 
-| Tenant | User | Status | `tenant.role` | `events` |
+| Tenant | User | Status | `memberships[0].tenant_role` | `memberships[0].event_roles` |
 | --- | --- | --- | --- | --- |
 | T1 | U1 | 200 | `"owner"` | `[{E1, "staff"}]` |
 | T1 | U2 | 200 | `"staff"` | `[{E1, "owner"}, {E2, "staff"}]` |
-| T1 | U3 | 200 | `null`    | `[]` |
-| T1 | U4 | 200 | `null`    | `[]` |
-| T1 | 未知ユーザ | 200 | `null`    | `[]` |
-| T2 | U1 | 200 | `null`    | `[]` |
-| T2 | U2 | 200 | `null`    | `[]` |
+| T1 | U3 | 200 | -（`memberships: []`） | - |
+| T1 | U4 | 200 | -（`memberships: []`） | - |
+| T1 | 未知ユーザ | 200 | -（`memberships: []`） | - |
+| T2 | U1 | 200 | -（`memberships: []`） | - |
+| T2 | U2 | 200 | -（`memberships: []`） | - |
 | T2 | U3 | 200 | `"owner"` | `[{E3, "staff"}]` |
 | T2 | U4 | 200 | `"staff"` | `[{E3, "owner"}]` |
-| 未知テナント | 任意 | 404 | -         | - |
+| 未知テナント | 任意 | 404 | - | - |
