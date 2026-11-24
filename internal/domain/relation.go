@@ -33,3 +33,20 @@ type EventMembership struct {
 	UserID  string
 	Role    Role
 }
+
+type RegistrationGrantType string
+
+const (
+	InvitationGrant     RegistrationGrantType = "invitation_token"
+	OwnershipClaimGrant RegistrationGrantType = "ownership_claim_token"
+)
+
+func (t RegistrationGrantType) Valid() bool {
+	return t == InvitationGrant || t == OwnershipClaimGrant
+}
+
+type RegistrationGrant struct {
+	TenantID string
+	Type     RegistrationGrantType
+	Token    string
+}

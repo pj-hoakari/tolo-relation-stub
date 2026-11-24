@@ -76,6 +76,32 @@ tolo-tenant-management の所属参照 API（`GET /tenants/{tenant_id}/users/{us
 | テナントは存在し、ユーザにテナントロールが無い | `200`（`memberships: []`） |
 | テナントロールあり | `200`（`memberships` に 1 件） |
 
+### `POST /tenants/:tenantId/registration-grants/verify`
+
+tolo-tenant-management の登録許可の検証 API（`POST /tenants/{tenant_id}/registration-grants/verify`）と同じ形で応答する
+
+リクエストボディは `invitation_token` と `ownership_claim_token` のどちらか一方だけを持つ JSON
+
+```json
+{ "invitation_token": "<token>" }
+```
+
+```json
+{ "valid": true }
+```
+
+- シードの `registrationGrants` に、テナント・種別・トークンの 3 つが一致する要素があれば `valid: true`
+- トークンは送られた値のまま比較する（前後の空白も含む）
+- 応答には常に `Cache-Control: no-store` を付ける
+
+| Case | Status |
+| --- | --- |
+| 一致する `registrationGrants` がある | `200`（`{"valid": true}`） |
+| 一致しない（未知のテナントを含む） | `200`（`{"valid": false}`） |
+| `:tenantId` が空白のみ | `400`（`{"error": "tenant_id is required"}`） |
+| JSON でない、未知のフィールド、後続データがある、4 KiB を超える | `400`（`{"error": "request body is malformed"}`） |
+| トークンが 0 個、2 個、または空文字列 | `400`（`{"error": "exactly one of invitation_token and ownership_claim_token is required"}`） |
+
 ### `GET /healthz`
 
 `200 {"status":"ok"}` を返すヘルスチェック
@@ -87,7 +113,8 @@ tolo-tenant-management の所属参照 API（`GET /tenants/{tenant_id}/users/{us
   "tenants":       [{ "id": "...", "name": "..." }],
   "events":        [{ "id": "...", "tenantId": "...", "name": "..." }],
   "tenantMembers": [{ "tenantId": "...", "userId": "...", "role": "owner|staff" }],
-  "eventMembers":  [{ "eventId":  "...", "userId": "...", "role": "owner|staff" }]
+  "eventMembers":  [{ "eventId":  "...", "userId": "...", "role": "owner|staff" }],
+  "registrationGrants": [{ "tenantId": "...", "type": "invitation_token|ownership_claim_token", "token": "..." }]
 }
 ```
 
@@ -99,6 +126,9 @@ tolo-tenant-management の所属参照 API（`GET /tenants/{tenant_id}/users/{us
 - ID の重複が無いこと
 - 同一ユーザが `tenantMembers` に複数現れないこと（1 ユーザ = 1 テナント）
 - `eventMembers[].userId` が、対応するイベントの所属テナントの `tenantMembers` に存在すること
+- `registrationGrants[].tenantId` が実在し、`type` が `invitation_token` / `ownership_claim_token` のいずれかで、`token` が空でないこと
+
+`registrationGrants` は省略できる。省略した場合、登録許可は 1 件もない
 
 ID値は単純な文字列として扱うため，制限等はなし
 
@@ -144,3 +174,10 @@ ID値は単純な文字列として扱うため，制限等はなし
 | T2 | U3 | 200 | `"owner"` | `[{E3, "staff"}]` |
 | T2 | U4 | 200 | `"staff"` | `[{E3, "owner"}]` |
 | 未知テナント | 任意 | 404 | - | - |
+
+### 登録許可
+
+| Tenant | Type | Token |
+| --- | --- | --- |
+| T1 | `invitation_token` | `sample-invitation-token-t1` |
+| T2 | `ownership_claim_token` | `sample-ownership-claim-token-t2` |

@@ -9,6 +9,7 @@ type Store struct {
 	eventsByTenant map[string][]domain.Event
 	tenantRoles    map[string]domain.Role
 	eventRoles     map[string]domain.Role
+	grants         map[domain.RegistrationGrant]struct{}
 }
 
 func New(
@@ -16,12 +17,14 @@ func New(
 	events []domain.Event,
 	tenantMembers []domain.TenantMembership,
 	eventMembers []domain.EventMembership,
+	grants []domain.RegistrationGrant,
 ) *Store {
 	s := &Store{
 		tenants:        make(map[string]domain.Tenant, len(tenants)),
 		eventsByTenant: make(map[string][]domain.Event),
 		tenantRoles:    make(map[string]domain.Role, len(tenantMembers)),
 		eventRoles:     make(map[string]domain.Role, len(eventMembers)),
+		grants:         make(map[domain.RegistrationGrant]struct{}, len(grants)),
 	}
 	for _, t := range tenants {
 		s.tenants[t.ID] = t
@@ -34,6 +37,9 @@ func New(
 	}
 	for _, m := range eventMembers {
 		s.eventRoles[membershipKey(m.EventID, m.UserID)] = m.Role
+	}
+	for _, g := range grants {
+		s.grants[g] = struct{}{}
 	}
 	return s
 }
@@ -55,6 +61,11 @@ func (s *Store) TenantRole(tenantID, userID string) (domain.Role, bool) {
 func (s *Store) EventRole(eventID, userID string) (domain.Role, bool) {
 	r, ok := s.eventRoles[membershipKey(eventID, userID)]
 	return r, ok
+}
+
+func (s *Store) HasRegistrationGrant(g domain.RegistrationGrant) bool {
+	_, ok := s.grants[g]
+	return ok
 }
 
 func membershipKey(resourceID, userID string) string {
