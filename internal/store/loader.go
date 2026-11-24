@@ -9,10 +9,11 @@ import (
 )
 
 type seedFile struct {
-	Tenants       []seedTenant           `json:"tenants"`
-	Events        []seedEvent            `json:"events"`
-	TenantMembers []seedTenantMembership `json:"tenantMembers"`
-	EventMembers  []seedEventMembership  `json:"eventMembers"`
+	Tenants       []seedTenant            `json:"tenants"`
+	Events        []seedEvent             `json:"events"`
+	TenantMembers []seedTenantMembership  `json:"tenantMembers"`
+	EventMembers  []seedEventMembership   `json:"eventMembers"`
+	Grants        []seedRegistrationGrant `json:"registrationGrants"`
 }
 
 type seedTenant struct {
@@ -36,6 +37,12 @@ type seedEventMembership struct {
 	EventID string `json:"eventId"`
 	UserID  string `json:"userId"`
 	Role    string `json:"role"`
+}
+
+type seedRegistrationGrant struct {
+	TenantID string `json:"tenantId"`
+	Type     string `json:"type"`
+	Token    string `json:"token"`
 }
 
 func LoadFromFile(path string) (*Store, error) {
@@ -134,5 +141,20 @@ func LoadFromFile(path string) (*Store, error) {
 		})
 	}
 
-	return New(tenants, events, tenantMembers, eventMembers), nil
+	grants := make([]domain.RegistrationGrant, 0, len(raw.Grants))
+	for i, g := range raw.Grants {
+		if _, ok := tenantIDs[g.TenantID]; !ok {
+			return nil, fmt.Errorf("registrationGrants[%d]: tenantId %q does not exist", i, g.TenantID)
+		}
+		grantType := domain.RegistrationGrantType(g.Type)
+		if !grantType.Valid() {
+			return nil, fmt.Errorf("registrationGrants[%d]: invalid type %q", i, g.Type)
+		}
+		if g.Token == "" {
+			return nil, fmt.Errorf("registrationGrants[%d]: token is required", i)
+		}
+		grants = append(grants, domain.RegistrationGrant{TenantID: g.TenantID, Type: grantType, Token: g.Token})
+	}
+
+	return New(tenants, events, tenantMembers, eventMembers, grants), nil
 }

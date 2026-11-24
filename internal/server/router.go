@@ -14,6 +14,7 @@ func NewRouter(s *store.Store) *gin.Engine {
 
 	r.GET("/healthz", handler.Healthz)
 	r.GET("/tenants/:tenantId/users/:userId/memberships", rel.ListMemberships)
+	r.POST("/tenants/:tenantId/registration-grants/verify", rel.VerifyRegistrationGrant)
 
 	return r
 }
